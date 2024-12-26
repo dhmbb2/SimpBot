@@ -1,0 +1,7 @@
+/.cache
+/alpaca
+/fine_tuned_mode*
+/qwen
+/qwen3b
+/results
+/test_result
