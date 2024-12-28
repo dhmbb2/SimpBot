@@ -1,6 +1,6 @@
-# SimpBot
+# 🤖 SimpBot
 
-This is the final project for the course Natrual Language Processing. In this project, we finetune the base Qwen model with Instruction SFT. And we build upon the finetuned LLM a chat bot with the ability to memorize chatting history, analyze and respond according to external files and role-play.
+This is the final project for the course Natrual Language Processing. We name it SimpBot because it is the simplest LLM Bot you can imagine :). In this project, we finetune the base Qwen model with Instruction SFT. And we build upon the finetuned LLM a chat bot with the ability to memorize chatting history, analyze and respond according to external files and role-play.
 
 ## Getting Started
 
@@ -48,8 +48,6 @@ bash start.sh
 ## Performance Showcasing
 <center>
 <figure class="third">
-<img src="asset/history.jpg" />
-<img src="asset/knowledge.png" />
-<img src="asset/character.png" />
+<img src="asset/history.jpg" /><img src="asset/knowledge.png" /><img src="asset/character.png" />
 </figure>
 </center>
