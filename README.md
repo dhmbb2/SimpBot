@@ -44,3 +44,12 @@ Use the following command to run. You can specify the port number in the script.
 ```bash
 bash start.sh
 ```
+
+## Performance Showcasing
+<center>
+<figure class="third">
+<img src="asset/history.jpg" />
+<img src="asset/knowledge.png" />
+<img src="asset/character.png" />
+</figure>
+</center>
