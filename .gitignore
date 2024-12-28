@@ -5,3 +5,7 @@
 /qwen3b
 /results
 /test_result
+__pycache__
+/tmp
+/debug_script
+/model

@@ -1,0 +1,10 @@
+huggingface-hub==0.24.7
+numpy==1.25.2
+opencompass
+pandas
+streamlit==1.41.1
+tensorboard==2.18.0
+transformers==4.37.0
+peft
+pdfminer.six
+sentence-transformers
