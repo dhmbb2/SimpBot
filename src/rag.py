@@ -53,5 +53,8 @@ class KnowledgeBase:
         """
         query_embedding = self.model.encode([query])[0].astype('float32')
         D, I = self.index.search(np.array([query_embedding]), k=top_k)
-        chunk_sim = [self.chunks[idx] for idx in I[0]]
+        chunk_sim = []
+        # we strip the first token and last token because they can be incomplete
+        for idx in I[0]:
+            chunk_sim.append(" ".join(self.chunks[idx].split()[1:-1]))
         return chunk_sim

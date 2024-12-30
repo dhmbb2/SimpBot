@@ -92,10 +92,26 @@ class ChatBot:
             # obtain input string via pretrained Instruction format
             prompt = f"You are a chatting bot, please respond to the following user input base on the provided input information. \
                     Instruction: {context} {history} User: {user_input} Output: Bot:"
+
         print(f"history length: {len(self.history)}")
         inputs = self.tokenizer.encode(prompt, return_tensors="pt").to(self.device)
-        print(len(inputs[0]))
-        inputs = inputs[:, -self.model.config.max_position_embeddings:]  # 限制输入的最大长度
+
+        # trim the context and history if the embedding length exceeds the configed maximum length
+        if len(inputs[0]) > (self.model.config.max_position_embeddings):
+            res = len(inputs[0]) - (self.model.config.max_position_embeddings)
+            # we first try giving up context
+            context = ' '.join(context.split()[:-res])
+            res -= len(inputs[0]) - len(context.split())
+            # if not enough, we trim the history
+            history = " ".join(context.split()[:-res])
+
+            # reformulate input
+            prompt = f"You are a chatting bot, please respond to the following user input base on the provided input information. \
+                    Instruction: {context} {history} User: {user_input} Output: "
+            inputs = self.tokenizer.encode(prompt, return_tensors="pt").to(self.device)
+
+        print(f"Input ID's length: {len(inputs[0])}.")
+        # inputs = inputs[:, -self.model.config.max_position_embeddings:]
 
         # 生成模型响应
         with torch.no_grad():
