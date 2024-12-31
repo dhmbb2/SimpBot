@@ -1,11 +1,14 @@
 import torch
 from typing import List, Dict
 from dataclasses import dataclass, field
-from transformers import HfArgumentParser, TrainingArguments, Trainer
+from transformers import HfArgumentParser, TrainingArguments, Trainer, TextIteratorStreamer
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from datasets import load_dataset
+from threading import Thread
 import torch
 from peft import PeftModel
+
+import asyncio
 
 from character import Character
 from rag import KnowledgeBase
@@ -78,8 +81,7 @@ class ChatBot:
     def clear_history(self):
         self.history = [] 
 
-    def chat_with_bot(self, user_input):
-        
+    def prepare_input(self, user_input):
         if self.character is not None:
             history = self._get_history_context(in_chat_form=False)
             prompt = self.character.get_input_prompt(user_input, history)
@@ -111,9 +113,12 @@ class ChatBot:
             inputs = self.tokenizer.encode(prompt, return_tensors="pt").to(self.device)
 
         print(f"Input ID's length: {len(inputs[0])}.")
-        # inputs = inputs[:, -self.model.config.max_position_embeddings:]
 
-        # 生成模型响应
+        return prompt, inputs
+
+    def chat_with_bot(self, user_input):
+        prompt, inputs = self.prepare_input(user_input)
+
         with torch.no_grad():
             outputs = self.model.generate(
                 inputs,
@@ -125,7 +130,6 @@ class ChatBot:
                 pad_token_id=self.tokenizer.eos_token_id,
             )
 
-        # 解码生成的响应
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         
         # strip the context part 
@@ -133,10 +137,40 @@ class ChatBot:
         # clean any possible quotes
         bot_response = self.clean_response(bot_response)
 
-        # 更新历史对话
         self._update_history(user_input, bot_response)
 
         return bot_response
+
+    async def async_chat_with_bot(self, user_input):
+        prompt, inputs = self.prepare_input(user_input)
+
+        decode_kwargs = dict(skip_special_tokens=True)
+        streamer = TextIteratorStreamer(self.tokenizer, **decode_kwargs)
+
+        with torch.no_grad():
+            generation_kwargs = dict(
+                inputs=inputs,
+                # max_length=self.max_length,
+                temperature=self.temperature,
+                top_p=self.top_p,
+                top_k=self.top_k,
+                do_sample=True,
+                num_return_sequences=1,
+                pad_token_id=self.tokenizer.eos_token_id,
+                streamer=streamer
+            )
+            thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
+            thread.start()
+
+        generated_text = ""
+        for new_text in streamer:
+            generated_text += new_text
+            if len(generated_text) <= len(prompt):
+                continue
+            yield generated_text[len(prompt):].strip()
+            await asyncio.sleep(0.1)
+
+        self._update_history(user_input, generated_text[len(prompt):].strip())
 
 # 聊天函数
 def start_chat():

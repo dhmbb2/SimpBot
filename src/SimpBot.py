@@ -4,9 +4,11 @@ from chatbot import ChatBot
 from utils import Message
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
+import asyncio
 
 # model and ckpt paths
 model_path = "./model/qwen3b"
+# model_path = "/data/youjunqi/nlp/fine_tuned_model_test_with_mask/checkpoint-800"
 lora_ckpt_path = "./model/qwen_lora"
 device="cuda" if torch.cuda.is_available() else "cpu"
 
@@ -56,8 +58,24 @@ with st.container():
         st.session_state["messages"].append(Message(identity=0, message=prompt))
         with st.chat_message("user"):
             st.markdown(prompt)
-        with st.spinner("Thinking..."):
-            response = st.session_state["bot"].chat_with_bot(prompt)
-        st.session_state["messages"].append(Message(identity=1, message=response))
+
+        # empty placeholder instead of thinking
         with st.chat_message("assistant"):
-            st.markdown(response)
+            response_placeholder = st.empty()
+
+        async def generate_response():
+            response_gen = st.session_state["bot"].async_chat_with_bot(prompt)
+            # Update the UI dynamically
+            async for response_part in response_gen:
+                response_placeholder.markdown(response_part)
+            # Once the response is fully generated, add it to the chat history
+            st.session_state["messages"].append(Message(identity=1, message=response_part))
+            # with st.chat_message("assistant"):
+            #     st.markdown(response_part)
+            
+        asyncio.run(generate_response())
+        # with st.spinner("Thinking..."):
+        #     response = st.session_state["bot"].chat_with_bot(prompt)
+        # st.session_state["messages"].append(Message(identity=1, message=response))
+        # with st.chat_message("assistant"):
+        #     st.markdown(response)

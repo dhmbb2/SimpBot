@@ -5,6 +5,7 @@ from utils import Message
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
+import asyncio
 
 path = Path("./articles")
 file_names = [f.name for f in path.iterdir() if f.is_file()]
@@ -80,8 +81,23 @@ else:
             st.session_state["messages"].append(Message(identity=0, message=prompt))
             with st.chat_message("user"):
                 st.markdown(prompt)
-            with st.spinner("Thinking..."):
-                response = st.session_state["bot"].chat_with_bot(prompt)
-            st.session_state["messages"].append(Message(identity=1, message=response))
+            # with st.spinner("Thinking..."):
+            #     response = st.session_state["bot"].chat_with_bot(prompt)
+            # st.session_state["messages"].append(Message(identity=1, message=response))
+            # with st.chat_message("assistant"):
+            #     st.markdown(response)
+            # empty placeholder instead of thinking
             with st.chat_message("assistant"):
-                st.markdown(response)
+                response_placeholder = st.empty()
+
+            async def generate_response():
+                response_gen = st.session_state["bot"].async_chat_with_bot(prompt)
+                # Update the UI dynamically
+                async for response_part in response_gen:
+                    response_placeholder.markdown(response_part)
+                # Once the response is fully generated, add it to the chat history
+                st.session_state["messages"].append(Message(identity=1, message=response_part))
+                # with st.chat_message("assistant"):
+                #     st.markdown(response_part)
+                
+            asyncio.run(generate_response())
