@@ -167,10 +167,10 @@ class ChatBot:
             generated_text += new_text
             if len(generated_text) <= len(prompt):
                 continue
-            yield generated_text[len(prompt):].strip()
+            yield self.clean_response(generated_text[len(prompt):].strip())
             await asyncio.sleep(0.1)
 
-        self._update_history(user_input, generated_text[len(prompt):].strip())
+        self._update_history(user_input, self.clean_response(generated_text[len(prompt):].strip()))
 
 # 聊天函数
 def start_chat():

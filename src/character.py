@@ -36,7 +36,6 @@ class Character:
         query_embedding = self.model.encode([user_input])[0].astype('float32')
         D, I = self.index.search(np.array([query_embedding]), k=top_k)
         chunk_sim = [self.chunks[idx] for idx in I[0]]
-        # print(chunk_sim)
         prompt = f" Only reply one line, and then stop. Don't copy what other characters says in the script. \
                     Note that you should talk and reply like {self.chara_name} You should not directly repeat\
                     what you said in the chat history. \

@@ -1,1 +1,1 @@
-streamlit run src/SimpBot.py --server.fileWatcherType none --server.port 6007
+streamlit run src/SimpBot.py --server.fileWatcherType none --server.port 6006
